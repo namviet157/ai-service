@@ -13,8 +13,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy toàn bộ thư mục code (bao gồm file main.py, thư mục app,...) vào container
 COPY . .
 
-# Expose cổng 8000 ra ngoài (Cổng mặc định của FastAPI)
+# Railway (và nhiều PaaS) inject PORT; local dev vẫn dùng 8000 nếu không set.
 EXPOSE 8000
 
-# Chạy ứng dụng FastAPI thông qua Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV PYTHONUNBUFFERED=1
+
+# shell form để Railway có thể truyền $PORT
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
