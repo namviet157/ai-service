@@ -4,14 +4,15 @@ FROM python:3.11-slim
 # Đặt thư mục làm việc trong container
 WORKDIR /app
 
-# Copy file requirements trước để tận dụng Docker cache
-COPY requirements.txt .
+# Context là root monorepo (Railway Dockerfile path: ai-service/Dockerfile).
+# Nếu đặt Railway Root Directory = ai-service thì đổi lại thành COPY requirements.txt . và COPY . .
+COPY ai-service/requirements.txt .
 
 # Cài đặt thư viện Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy toàn bộ thư mục code (bao gồm file main.py, thư mục app,...) vào container
-COPY . .
+# Copy toàn bộ code Python vào /app
+COPY ai-service/ .
 
 # Railway (và nhiều PaaS) inject PORT; local dev vẫn dùng 8000 nếu không set.
 EXPOSE 8000
