@@ -41,22 +41,40 @@ from app.services.file_utils import (
 
 load_app_env()
 
+
+def _parse_cors_origins() -> list[str]:
+    raw = os.environ.get(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080",
+    )
+    return [o.strip() for o in raw.split(",") if o.strip()]
+
+
 app = FastAPI(
     title="Borderflow Verification API",
     version="0.2.0",
     description="Zero-Stop E-Border AI Auditor pipeline",
 )
 
+_cors_regex = os.environ.get("CORS_ORIGIN_REGEX", "").strip() or None
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get(
-        "CORS_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080",
-    ).split(","),
+    allow_origins=_parse_cors_origins(),
+    allow_origin_regex=_cors_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+def root() -> dict[str, str]:
+    return {
+        "service": "Borderflow Verification API",
+        "health": "/health",
+        "docs": "/docs",
+    }
 
 
 @app.get("/health")
